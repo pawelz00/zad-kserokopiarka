@@ -37,7 +37,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_GetState_StateOff()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOff();
 
             Assert.AreEqual(IDevice.State.off, copier.GetState()); 
@@ -46,7 +46,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_GetState_StateOn()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             Assert.AreEqual(IDevice.State.on, copier.GetState());
@@ -58,7 +58,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_Print_DeviceOn()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             var currentConsoleOut = Console.Out;
@@ -77,7 +77,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_Print_DeviceOff()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOff();
 
             var currentConsoleOut = Console.Out;
@@ -96,7 +96,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_Scan_DeviceOff()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOff();
 
             var currentConsoleOut = Console.Out;
@@ -115,7 +115,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_Scan_DeviceOn()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             var currentConsoleOut = Console.Out;
@@ -134,7 +134,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_Scan_FormatTypeDocument()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             var currentConsoleOut = Console.Out;
@@ -164,7 +164,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_ScanAndPrint_DeviceOn()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             var currentConsoleOut = Console.Out;
@@ -184,7 +184,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_ScanAndPrint_DeviceOff()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOff();
 
             var currentConsoleOut = Console.Out;
@@ -201,7 +201,7 @@ namespace ver1UnitTests
         [TestMethod]
         public void Copier_PrintCounter()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             IDocument doc1 = new PDFDocument("aaa.pdf");
@@ -220,13 +220,13 @@ namespace ver1UnitTests
             copier.ScanAndPrint();
 
             // 5 wydruków, gdy urządzenie włączone
-            Assert.AreEqual(5, copier.PrintCounter);
+            Assert.AreEqual(5, copier._printer.PrintCounter);
         }
 
         [TestMethod]
         public void Copier_ScanCounter()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
 
             IDocument doc1;
@@ -246,13 +246,13 @@ namespace ver1UnitTests
             copier.ScanAndPrint();
 
             // 4 skany, gdy urządzenie włączone
-            Assert.AreEqual(4, copier.ScanCounter);
+            Assert.AreEqual(4, copier._scanner.ScanCounter);
         }
 
         [TestMethod]
         public void Copier_PowerOnCounter()
         {
-            var copier = new Copier();
+            var copier = new Copier(new Printer(), new Scanner());
             copier.PowerOn();
             copier.PowerOn();
             copier.PowerOn();

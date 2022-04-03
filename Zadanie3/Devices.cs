@@ -13,7 +13,6 @@ namespace ver1
         int Counter {get;}  // zwraca liczbę charakteryzującą eksploatację urządzenia,
                             // np. liczbę uruchomień, liczbę wydrukow, liczbę skanów, ...
     }
-
     public abstract class BaseDevice : IDevice
     {
         protected IDevice.State state = IDevice.State.off;
@@ -42,9 +41,8 @@ namespace ver1
             }
         }
 
-        public int Counter { get; private set; } = 0;
+        public int Counter { get; set; } = 0;
     }
-
     public class Printer : BaseDevice, IPrinter
     {
         public int PrintCounter { get; private set; } = 0;
@@ -58,7 +56,6 @@ namespace ver1
             }
         }
     }
-
     public class Scanner : BaseDevice, IScanner
     {
         public int ScanCounter { get; private set; } = 0;
@@ -83,7 +80,6 @@ namespace ver1
                 Console.WriteLine($"{localDate} Scan: {document.GetFileName()}");
             }
         }
-
         public void Scan(out IDocument document)
         {
             string filename = $"ScannedDocument{ScanCounter}.jpg";
@@ -97,7 +93,21 @@ namespace ver1
             else return;
         }
     }
-
+    public class Faxer : BaseDevice, IFax
+    {
+        public int FaxCounter { get; private set; } = 0;   
+        public void Fax(out IDocument document)
+        {
+            string filename = $"FaxDocument{FaxCounter}";
+            document = new ImageDocument(filename);
+            if (state == IDevice.State.on)
+            {
+                FaxCounter++;
+                Console.WriteLine($"{localDate} Fax: {filename}");
+            }
+            else return;
+        }
+    }
     public class Copier : BaseDevice
     {
         public Printer _printer;
@@ -107,7 +117,25 @@ namespace ver1
             _printer = printer;
             _scanner = scanner;
         }
-
+        public new void PowerOn()
+        {
+            if(state == IDevice.State.on) 
+            { } else if (state == IDevice.State.off)
+            {
+                state = IDevice.State.on;
+                Counter++;
+                ScannerPowerOn(); PrinterPowerOn();
+            }
+        }
+        public new void PowerOff()
+        {
+            if (state == IDevice.State.off) { }
+            else
+            {
+                state = IDevice.State.off;
+                ScannerPowerOff(); PrinterPowerOff();
+            }
+        }
         public void ScannerPowerOn()
         {
             Console.WriteLine("Włączenie funkcji skanowania");
@@ -128,7 +156,6 @@ namespace ver1
             Console.WriteLine("Wyłączenie funkcji drukowania");
             _printer.PowerOff();
         }
-
         public void Scan(out IDocument document)
         {
             _scanner.Scan(out document);
@@ -137,14 +164,109 @@ namespace ver1
         {
             _scanner.Scan(out document, formatType);
         }
-
         public void Print(in IDocument document)
         {
             _printer.Print(document);
         }
-
+        public void ScanAndPrint()
+        {
+            if (_scanner.GetState() == IDevice.State.on && _printer.GetState() == IDevice.State.on)
+            {
+                IDocument doc;
+                Scan(out doc);
+                Print(doc);
+            }
+        }
     }
 
+    public class MultidimensionalDevice : BaseDevice
+    {
+        public Printer _printer;
+        public Scanner _scanner;
+        public Faxer _faxer;
+
+        public MultidimensionalDevice(Printer printer, Scanner scanner, Faxer faxer)
+        {
+            _printer = printer;
+            _scanner = scanner;
+            _faxer = faxer;
+        }
+        public new void PowerOn()
+        {
+            if (state == IDevice.State.on)
+            { }
+            else if (state == IDevice.State.off)
+            {
+                state = IDevice.State.on;
+                Counter++;
+                ScannerPowerOn(); PrinterPowerOn(); FaxerPowerOn();
+            }
+        }
+        public new void PowerOff()
+        {
+            if (state == IDevice.State.off) { }
+            else
+            {
+                state = IDevice.State.off;
+                ScannerPowerOff(); PrinterPowerOff(); FaxerPowerOff();
+            }
+        }
+        public void ScannerPowerOn()
+        {
+            Console.WriteLine("Włączenie funkcji skanowania");
+            _scanner.PowerOn();
+        }
+        public void ScannerPowerOff()
+        {
+            Console.WriteLine("Wyłączenie funkcji skanowania");
+            _scanner.PowerOff();
+        }
+        public void PrinterPowerOn()
+        {
+            Console.WriteLine("Włączenie funkcji drukowania");
+            _printer.PowerOn();
+        }
+        public void PrinterPowerOff()
+        {
+            Console.WriteLine("Wyłączenie funkcji drukowania");
+            _printer.PowerOff();
+        }
+        public void FaxerPowerOn()
+        {
+            Console.WriteLine("Włączenie funkcji faksowania");
+            _faxer.PowerOn();
+        }
+        public void FaxerPowerOff()
+        {
+            Console.WriteLine("Wyłączenie funkcji faksowania");
+            _faxer.PowerOff();
+        }
+        public void Scan(out IDocument document)
+        {
+            _scanner.Scan(out document);
+        }
+        public void Scan(out IDocument document, IDocument.FormatType formatType)
+        {
+            _scanner.Scan(out document, formatType);
+        }
+        public void Print(in IDocument document)
+        {
+            _printer.Print(document);
+        }
+        public void Fax(out IDocument document)
+        {
+            _faxer.Fax(out document);
+        }
+        public void ScanAndPrint()
+        {
+            if (_scanner.GetState() == IDevice.State.on && _printer.GetState() == IDevice.State.on)
+            {
+                IDocument doc;
+                Scan(out doc);
+                Print(doc);
+            }
+        }
+    }
     public interface IPrinter : IDevice
     {
         /// <summary>
@@ -156,9 +278,11 @@ namespace ver1
 
     public interface IScanner : IDevice
     {
-        // dokument jest skanowany, jeśli urządzenie włączone
-        // w przeciwnym przypadku nic się dzieje
         void Scan(out IDocument document, IDocument.FormatType formatType);
+    }
+    public interface IFax : IDevice
+    {
+        void Fax(out IDocument document);
     }
 
 }
